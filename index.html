@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command Manager</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0e14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CmdManager" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- INSTALL BANNER -->
+  <div class="install-banner" id="installBanner">
+    <div class="install-banner-icon">$_</div>
+    <div class="install-banner-text">
+      <strong>Instalar no Android</strong>
+      <span>Use sem internet, como um app</span>
+    </div>
+    <button class="btn btn-install" id="installBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Instalar
+    </button>
+    <button class="install-banner-close" id="dismissBanner" aria-label="Fechar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">$_</span>
+        <span class="logo-text">Command Manager</span>
+      </div>
+      <div class="header-right">
+        <p class="header-sub">Linux &amp; Windows · Referência de Comandos</p>
+        <button class="btn btn-install-header" id="installBtnHeader" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Instalar App
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-inner">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar comando ou descrição..." />
+      <button class="btn btn-primary" id="openModalBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Comando
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main id="main"></main>
+
+  <!-- MODAL NOVO COMANDO -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Adicionar Comando</h2>
+        <button class="modal-close" id="closeModalBtn" aria-label="Fechar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="modalCategory">Categoria</label>
+          <div class="select-wrapper">
+            <select id="modalCategory">
+              <option value="">— Selecionar existente —</option>
+            </select>
+          </div>
+          <span class="form-or">ou crie uma nova:</span>
+          <input type="text" id="newCategory" placeholder="Ex: Docker - Containers" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="modalCommand">Comando</label>
+          <input type="text" id="modalCommand" placeholder="Ex: docker ps -a" class="form-input mono" />
+        </div>
+        <div class="form-group">
+          <label for="modalDesc">Descrição</label>
+          <input type="text" id="modalDesc" placeholder="Ex: Listar todos os containers" class="form-input" />
+        </div>
+        <p class="form-error" id="formError"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancelBtn">Cancelar</button>
+        <button class="btn btn-primary" id="saveBtn">Salvar Comando</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
