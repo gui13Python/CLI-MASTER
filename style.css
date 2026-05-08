@@ -302,7 +302,8 @@ main {
   padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between; /* Garante o botão de cópia alinhado na ponta direita */
+  gap: 16px;
   transition: background 0.18s, border-color 0.18s, transform 0.18s;
   position: relative;
 }
@@ -314,21 +315,22 @@ main {
   box-shadow: 0 6px 24px rgba(0,0,0,0.35);
 }
 
+/* ===== CORRIGIDO: CONTAINER INFO ===== */
 .cmd-info {
-  flex: 1;
-  min-width: 0;
+  display: flex;
+  flex-direction: column; 
+  align-items: flex-start; 
+  gap: 8px; 
+  flex: 1; /* Faz o texto ocupar o espaço máximo disponível, empurrando o botão de copiar */
+  min-width: 0; /* Evita estouro de layout com flexbox */
 }
 
+/* ===== CORRIGIDO: NOME DO COMANDO ===== */
 .cmd-name {
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent);
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 3px;
+  display: inline-block;
 }
 
 .cat-linux-sistema .cmd-name { color: var(--accent-linux); }
@@ -336,12 +338,14 @@ main {
 .cat-windows-rede .cmd-name { color: #5cb8ff; }
 .cat-custom .cmd-name { color: var(--accent-custom); }
 
+/* ===== CORRIGIDO: DESCRIÇÃO DO COMANDO ===== */
 .cmd-desc {
+  display: block;
   font-size: 12px;
   color: var(--text2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.5;
+  white-space: normal; /* Agora permite a quebra automática de linha */
+  word-break: break-word; /* Evita que termos colados como "-aMostra" quebrem a lateral */
 }
 
 /* ===== EMPTY STATE ===== */
@@ -540,141 +544,4 @@ main {
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text3); }
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 600px) {
-  .logo-text { font-size: 20px; }
-  .toolbar-inner { flex-direction: column; align-items: stretch; }
-  .btn-primary { justify-content: center; }
-  .cmd-grid { grid-template-columns: 1fr; }
-  main { padding: 20px 14px 60px; }
-}
-
-/* ===== PWA INSTALL BANNER ===== */
-.install-banner {
-  display: none;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #0d1a2e, #111e38);
-  border-bottom: 1px solid var(--border-bright);
-  padding: 12px 20px;
-  position: relative;
-  animation: slideDown 0.35s cubic-bezier(.34,1.56,.64,1);
-}
-
-.install-banner.visible { display: flex; }
-
-@keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
-  to   { transform: translateY(0);     opacity: 1; }
-}
-
-.install-banner-icon {
-  font-family: var(--font-mono);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--accent);
-  text-shadow: 0 0 12px rgba(0,229,255,0.6);
-  background: var(--bg3);
-  border: 1px solid var(--border-bright);
-  border-radius: 10px;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.install-banner-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.install-banner-text strong {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.install-banner-text span {
-  font-size: 12px;
-  color: var(--text3);
-  font-family: var(--font-mono);
-}
-
-.btn-install {
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  border-radius: var(--radius);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
-  padding: 9px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.18s;
-  flex-shrink: 0;
-  box-shadow: 0 0 16px rgba(0,229,255,0.3);
-}
-
-.btn-install:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 24px rgba(0,229,255,0.5);
-  transform: translateY(-1px);
-}
-
-.install-banner-close {
-  background: transparent;
-  border: none;
-  color: var(--text3);
-  cursor: pointer;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
-  flex-shrink: 0;
-}
-
-.install-banner-close:hover {
-  color: var(--text);
-  background: var(--bg3);
-}
-
-/* Install button in header */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.btn-install-header {
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  border-radius: var(--radius);
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 7px 13px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.18s;
-  white-space: nowrap;
-}
-
-.btn-install-header:hover {
-  background: rgba(0,229,255,0.1);
-  box-shadow: 0 0 12px rgba(0,229,255,0.2);
-}
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius:
