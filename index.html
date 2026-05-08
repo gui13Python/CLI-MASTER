@@ -1,124 +1,1308 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Command Manager</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automação em Python para Escritório | Economize Horas Todo Dia</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0E0A;
+  --surface: #0F150F;
+  --card: #141C14;
+  --card2: #1A241A;
+  --border: rgba(0,255,80,0.1);
+  --green: #00FF50;
+  --green-dim: #00C840;
+  --green-muted: rgba(0,255,80,0.55);
+  --green-glow: rgba(0,255,80,0.12);
+  --yellow: #FFD95A;
+  --text: #E8F0E8;
+  --muted: #7A917A;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --body: 'Inter', sans-serif;
+}
 
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b0e14" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="CmdManager" />
-  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* Custom cursor */
+.cursor {
+  position: fixed;
+  width: 10px; height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.05s;
+  box-shadow: 0 0 12px var(--green), 0 0 24px var(--green-glow);
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid var(--green-muted);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.12s ease, width 0.2s, height 0.2s;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ── SCANLINES ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,80,0.015) 2px, rgba(0,255,80,0.015) 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NAVBAR ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10,14,10,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--green);
+  letter-spacing: 0.05em;
+}
+.nav-logo span { color: var(--muted); }
+
+.nav-cta {
+  background: var(--green);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 9px 22px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: box-shadow 0.2s, transform 0.2s;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.nav-cta:hover { box-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,255,80,0.3); transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 120px 10vw 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,80,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,80,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 70% at 60% 50%, black 30%, transparent 100%);
+}
+
+.hero-glow {
+  position: absolute;
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse, rgba(0,255,80,0.07) 0%, transparent 70%);
+  top: 10%; right: -10%;
+  pointer-events: none;
+  animation: glowPulse 6s ease-in-out infinite alternate;
+}
+
+
+@keyframes glowPulse {
+  from { opacity: 0.6; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.1); }
+}
+
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--green);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  margin-bottom: 32px;
+  background: var(--green-glow);
+  animation: fadeUp 0.6s ease both;
+}
+
+/* CLASSE DO TÍTULO PRINCIPAL (CORRIGIDA) */
+.hero-title {
+  font-family: var(--sans);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  max-width: 100%;
+  animation: fadeUp 0.7s 0.1s ease both;
+  word-wrap: break-word;
+}
+
+.hero-title span {
+  display: block;
+}
+
+.hero-title .accent { color: var(--green); display: inline; }
+.hero-title .line2 { display: block; }
+
+.hero-terminal {
+  margin-top: 36px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px 24px;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  max-width: 540px;
+  animation: fadeUp 0.8s 0.3s ease both;
+  position: relative;
+}
+
+.terminal-bar {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+.terminal-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+}
+.terminal-dot:nth-child(1) { background: #FF5F56; }
+.terminal-dot:nth-child(2) { background: #FFBD2E; }
+.terminal-dot:nth-child(3) { background: #27C93F; }
+.terminal-title { color: var(--muted); font-size: 0.7rem; margin-left: 6px; }
+
+.terminal-line { line-height: 1.7; }
+.t-prompt { color: var(--green); }
+.t-cmd { color: var(--text); }
+.t-comment { color: var(--muted); }
+.t-output { color: var(--yellow); }
+.t-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--green);
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+.hero-sub {
+  margin-top: 28px;
+  font-size: 1.05rem;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.75;
+  animation: fadeUp 0.8s 0.4s ease both;
+}
+.hero-sub strong { color: var(--text); font-weight: 500; }
+
+.hero-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 44px;
+  animation: fadeUp 0.8s 0.55s ease both;
+}
+
+.btn-main {
+  background: var(--green);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 16px 42px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: box-shadow 0.25s, transform 0.2s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.btn-main:hover {
+  box-shadow: 0 0 28px var(--green), 0 0 60px rgba(0,255,80,0.25);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--green-muted);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  padding: 16px 28px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-ghost:hover { border-color: var(--green-muted); color: var(--green); }
+
+.hero-proof {
+  margin-top: 36px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: fadeUp 0.8s 0.65s ease both;
+}
+
+.proof-avatars {
+  display: flex;
+}
+.proof-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+  margin-left: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--bg);
+}
+.proof-avatar:first-child { margin-left: 0; }
+.pa1 { background: #00C840; }
+.pa2 { background: #FFD95A; }
+.pa3 { background: #00A8FF; }
+.pa4 { background: #FF6B6B; }
+.pa5 { background: #B467FF; }
+
+.proof-text { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+.proof-text strong { color: var(--green); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SCROLLING TICKER ── */
+.ticker {
+  background: var(--green);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 10px 0;
+}
+.ticker-inner {
+  display: inline-block;
+  animation: ticker 22s linear infinite;
+}
+.ticker-item {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--bg);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 32px;
+}
+.ticker-item::after { content: ' ◆ '; opacity: 0.4; }
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ── SECTIONS BASE ── */
+section { padding: 100px 10vw; position: relative; z-index: 1; }
+
+.section-tag {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--green);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: block;
+}
+.section-title {
+  font-family: var(--sans);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.section-title .acc { color: var(--green); }
+
+/* ── FOR WHO ── */
+.forwho { background: var(--surface); }
+
+.forwho-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 52px;
+  background: var(--border);
+}
+
+.forwho-card {
+  background: var(--card);
+  padding: 36px;
+  transition: background 0.25s;
+}
+.forwho-card:hover { background: var(--card2); }
+
+.fw-icon { font-size: 2rem; margin-bottom: 18px; display: block; }
+.fw-title {
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.fw-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+
+/* ── MODULES ── */
+.modules { background: var(--bg); }
+
+.mod-list { margin-top: 52px; }
+
+.mod-item {
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  margin-bottom: 3px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.mod-item:hover { border-left-color: var(--green); }
+.mod-item.open { border-left-color: var(--green); background: var(--green-glow); }
+
+.mod-header {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 22px 28px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.mod-num {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--green);
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.mod-name {
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+.mod-arrow {
+  color: var(--green-muted);
+  font-size: 0.9rem;
+  transition: transform 0.3s;
+  font-family: var(--mono);
+}
+.mod-item.open .mod-arrow { transform: rotate(90deg); }
+
+.mod-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+  padding: 0 28px 0 70px;
+}
+.mod-item.open .mod-body { max-height: 200px; padding: 0 28px 22px 70px; }
+
+.mod-body ul { list-style: none; }
+.mod-body ul li {
+  font-size: 0.87rem;
+  color: var(--muted);
+  padding: 5px 0;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.mod-body ul li::before { content: '→'; color: var(--green); flex-shrink: 0; font-family: var(--mono); }
+
+/* ── WHAT YOU LEARN ── */
+.learn { background: var(--surface); }
+
+.learn-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 52px;
+}
+
+.learn-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 30px 26px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.learn-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--green), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+.learn-card:hover::before { transform: scaleX(1); }
+.learn-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,255,80,0.07); }
+
+.lc-icon { font-size: 1.8rem; margin-bottom: 18px; display: block; }
+.lc-title {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.lc-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+.lc-tag {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--green);
+  background: var(--green-glow);
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  letter-spacing: 0.08em;
+}
+
+/* ── TESTIMONIALS ── */
+.testimonials { background: var(--bg); }
+
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 52px;
+}
+
+.testi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 30px;
+  position: relative;
+  transition: border-color 0.2s;
+}
+.testi-card:hover { border-color: var(--green-muted); }
+
+.testi-stars {
+  color: var(--yellow);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+.testi-text {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.75;
+  font-style: italic;
+  border-left: 2px solid var(--green);
+  padding-left: 14px;
+}
+
+.testi-footer {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.testi-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--bg);
+  flex-shrink: 0;
+}
+
+.testi-info { flex: 1; }
+.testi-name { font-size: 0.83rem; font-weight: 600; color: var(--text); }
+.testi-role { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+.testi-verified {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--green);
+  background: var(--green-glow);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  letter-spacing: 0.06em;
+}
+
+/* ── COUNTER SECTION ── */
+.counters {
+  background: var(--green);
+  padding: 60px 10vw;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.counter-item {
+  text-align: center;
+  padding: 20px;
+}
+
+.counter-num {
+  font-family: var(--mono);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  color: var(--bg);
+  display: block;
+  line-height: 1;
+}
+.counter-label {
+  font-size: 0.78rem;
+  color: rgba(10,14,10,0.65);
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* ── PRICING ── */
+.pricing {
+  background: var(--surface);
+  text-align: center;
+}
+
+.pricing-box {
+  max-width: 520px;
+  margin: 52px auto 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-glow {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--green);
+  pointer-events: none;
+  animation: borderGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes borderGlow {
+  from { box-shadow: inset 0 0 20px rgba(0,255,80,0.05), 0 0 20px rgba(0,255,80,0.1); }
+  to { box-shadow: inset 0 0 40px rgba(0,255,80,0.1), 0 0 50px rgba(0,255,80,0.2); }
+}
+
+.pricing-header {
+  background: var(--green);
+  padding: 18px 32px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--bg);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pricing-body { padding: 48px 40px; }
+
+.price-old {
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--muted);
+  text-decoration: line-through;
+  margin-bottom: 6px;
+}
+
+.price-main {
+  font-family: var(--mono);
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 700;
+  color: var(--green);
+  line-height: 1;
+}
+
+.price-main .currency { font-size: 1.5rem; vertical-align: super; }
+.price-period { font-size: 0.8rem; color: var(--muted); margin-top: 6px; font-family: var(--mono); }
+
+.price-features {
+  list-style: none;
+  margin: 36px 0;
+  text-align: left;
+}
+
+.price-features li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+  color: var(--muted);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.price-features li .check { color: var(--green); font-family: var(--mono); flex-shrink: 0; }
+
+.price-cta {
+  display: block;
+  background: var(--green);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 18px;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow 0.25s, transform 0.2s;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.price-cta:hover { box-shadow: 0 0 30px var(--green), 0 0 60px rgba(0,255,80,0.2); transform: translateY(-1px); }
+
+.price-note { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-top: 14px; }
+
+/* ── FAQ ── */
+.faq { background: var(--bg); }
+
+.faq-grid { margin-top: 52px; display: flex; flex-direction: column; gap: 3px; }
+
+.faq-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+.faq-item:hover, .faq-item.open { border-left-color: var(--green); }
+
+.faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 20px 24px;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.faq-icon { font-family: var(--mono); color: var(--green); transition: transform 0.3s; font-size: 1.1rem; }
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+  padding: 0 24px;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.75;
+}
+.faq-item.open .faq-a { max-height: 200px; padding: 0 24px 20px; }
+
+/* ── FINAL CTA ── */
+.final-cta {
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  padding: 120px 10vw;
+  position: relative;
+  overflow: hidden;
+}
+
+.final-cta-glow {
+  position: absolute;
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(0,255,80,0.09) 0%, transparent 70%);
+  left: 50%; top: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+
+.final-cta .section-title { max-width: 680px; margin: 0 auto; }
+.final-cta p { max-width: 500px; margin: 20px auto 0; color: var(--muted); font-size: 1rem; line-height: 1.75; }
+
+.final-btns { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 44px; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 40px 10vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footer-logo { font-family: var(--mono); font-size: 0.82rem; color: var(--green); }
+.footer-logo span { color: var(--muted); }
+.footer-text { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-align: right; line-height: 1.8; }
+.footer-text a { color: var(--green-muted); text-decoration: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 14px 20px; }
+  section { padding: 72px 6vw; }
+  .hero { padding: 100px 6vw 72px; }
+  .forwho-grid { grid-template-columns: 1fr; }
+  .learn-grid { grid-template-columns: 1fr; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .counters { grid-template-columns: 1fr 1fr; padding: 40px 6vw; }
+  .pricing-body { padding: 32px 24px; }
+  footer { flex-direction: column; text-align: center; }
+  .footer-text { text-align: center; }
+  body { cursor: default; }
+  .cursor, .cursor-ring { display: none; }
+  
+  /* AJUSTE EXCLUSIVO DO TÍTULO NO CELULAR */
+  .hero-title {
+    font-size: 2.1rem;
+    line-height: 1.2;
+    text-align: left;
+  }
+}
+</style>
 </head>
 <body>
 
-  <!-- INSTALL BANNER -->
-  <div class="install-banner" id="installBanner">
-    <div class="install-banner-icon">$_</div>
-    <div class="install-banner-text">
-      <strong>Instalar no Android</strong>
-      <span>Use sem internet, como um app</span>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<nav>
+  <div class="nav-logo">python<span>.</span>automacao<span>()</span></div>
+  <a href="https://go.hotmart.com/L105221030W?dp=1" target="_blank" class="nav-cta">QUERO AUTOMATIZAR →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-tag">🐍 Curso Prático · André Taques · Hotmart</div>
+
+  <h1 class="hero-title">
+    <span>Automatize seu</span>
+    <span class="line2">trabalho com <span class="accent">Python</span></span>
+  </h1>
+
+  <div class="hero-terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <span class="terminal-title">automacao_escritorio.py</span>
     </div>
-    <button class="btn btn-install" id="installBtn">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      Instalar
-    </button>
-    <button class="install-banner-close" id="dismissBanner" aria-label="Fechar">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
+    <div class="terminal-line"><span class="t-comment"># Antes do curso: 4 horas de planilha manual</span></div>
+    <div class="terminal-line"><span class="t-comment"># Depois do curso:</span></div>
+    <div class="terminal-line"><span class="t-prompt">>>> </span><span class="t-cmd">python gerar_relatorio.py</span></div>
+    <div class="terminal-line"><span class="t-output">✓ 500 relatórios gerados em 12 segundos.</span></div>
+    <div class="terminal-line"><span class="t-output">✓ E-mails enviados automaticamente.</span></div>
+    <div class="terminal-line"><span class="t-output">✓ Planilhas organizadas. Você pode descansar.</span></div>
+    <div class="terminal-line"><span class="t-prompt">>>> </span><span class="t-cursor"></span></div>
   </div>
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-inner">
-      <div class="logo">
-        <span class="logo-icon">$_</span>
-        <span class="logo-text">Command Manager</span>
-      </div>
-      <div class="header-right">
-        <p class="header-sub">Linux &amp; Windows · Referência de Comandos</p>
-        <button class="btn btn-install-header" id="installBtnHeader" style="display:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Instalar App
-        </button>
-      </div>
-    </div>
-  </header>
+  <p class="hero-sub">
+    Aprenda a usar <strong>Python do zero</strong> para eliminar tarefas repetitivas no trabalho — planilhas, e-mails, PDFs, relatórios e muito mais. <strong>Sem precisar ser desenvolvedor.</strong>
+  </p>
 
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <div class="toolbar-inner">
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar comando ou descrição..." />
-      <button class="btn btn-primary" id="openModalBtn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Novo Comando
+  <div class="hero-btns">
+    <a href="https://go.hotmart.com/L105221030W?dp=1" target="_blank" class="btn-main">
+      ⚡ QUERO ECONOMIZAR HORAS
+    </a>
+    <a href="#modulos" class="btn-ghost">ver o que aprendo →</a>
+  </div>
+
+  <div class="hero-proof">
+    <div class="proof-avatars">
+      <div class="proof-avatar pa1">MR</div>
+      <div class="proof-avatar pa2">CS</div>
+      <div class="proof-avatar pa3">JL</div>
+      <div class="proof-avatar pa4">AP</div>
+      <div class="proof-avatar pa5">TB</div>
+    </div>
+    <p class="proof-text"><strong>+1.200 alunos</strong> já automatizaram o trabalho<br>com este curso ⭐⭐⭐⭐⭐</p>
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">Automatize Excel e Google Sheets</span>
+    <span class="ticker-item">Envie e-mails em massa</span>
+    <span class="ticker-item">Gere relatórios em PDF</span>
+    <span class="ticker-item">Organize arquivos automaticamente</span>
+    <span class="ticker-item">Web scraping de dados</span>
+    <span class="ticker-item">Preencha formulários</span>
+    <span class="ticker-item">Economize horas todo dia</span>
+    <span class="ticker-item">Automatize Excel e Google Sheets</span>
+    <span class="ticker-item">Envie e-mails em massa</span>
+    <span class="ticker-item">Gere relatórios em PDF</span>
+    <span class="ticker-item">Organize arquivos automaticamente</span>
+    <span class="ticker-item">Web scraping de dados</span>
+    <span class="ticker-item">Preencha formulários</span>
+    <span class="ticker-item">Economize horas todo dia</span>
+  </div>
+</div>
+
+<section class="forwho">
+  <span class="section-tag">// para quem é este curso</span>
+  <h2 class="section-title">Você se encaixa <span class="acc">aqui?</span></h2>
+
+  <div class="forwho-grid">
+    <div class="forwho-card">
+      <span class="fw-icon">📊</span>
+      <h3 class="fw-title">Trabalha com planilhas todo dia</h3>
+      <p class="fw-desc">Gasta horas copiando, colando e formatando dados no Excel? Python faz isso em segundos — você vai se perguntar como viveu sem isso.</p>
+    </div>
+    <div class="forwho-card">
+      <span class="fw-icon">📧</span>
+      <h3 class="fw-title">Envia e-mails repetitivos</h3>
+      <p class="fw-desc">Relatórios semanais, cobranças, confirmações... aprenda a criar scripts que enviam centenas de e-mails personalizados enquanto você toma café.</p>
+    </div>
+    <div class="forwho-card">
+      <span class="fw-icon">🐍</span>
+      <h3 class="fw-title">Está aprendendo Python</h3>
+      <p class="fw-desc">Já conhece o básico mas não sabe o que fazer com isso? Este curso te mostra aplicações reais, práticas e imediatas no seu trabalho diário.</p>
+    </div>
+    <div class="forwho-card">
+      <span class="fw-icon">⏰</span>
+      <h3 class="fw-title">Quer recuperar seu tempo</h3>
+      <p class="fw-desc">Tarefas manuais consomem sua energia mais valiosa. Automatize o que é repetitivo e foque no que realmente importa para sua carreira.</p>
+    </div>
+  </div>
+</section>
+
+<section class="modules" id="modulos">
+  <span class="section-tag">// conteúdo do curso</span>
+  <h2 class="section-title">O que você vai <span class="acc">aprender</span></h2>
+
+  <div class="mod-list">
+    <div class="mod-item open">
+      <button class="mod-header" onclick="toggleMod(this)">
+        <span class="mod-num">01</span>
+        <span class="mod-name">Fundamentos de Python para Automação</span>
+        <span class="mod-arrow">▶</span>
       </button>
-    </div>
-  </div>
-
-  <!-- MAIN CONTENT -->
-  <main id="main"></main>
-
-  <!-- MODAL NOVO COMANDO -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal" id="modal">
-      <div class="modal-header">
-        <h2 class="modal-title">Adicionar Comando</h2>
-        <button class="modal-close" id="closeModalBtn" aria-label="Fechar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="modalCategory">Categoria</label>
-          <div class="select-wrapper">
-            <select id="modalCategory">
-              <option value="">— Selecionar existente —</option>
-            </select>
-          </div>
-          <span class="form-or">ou crie uma nova:</span>
-          <input type="text" id="newCategory" placeholder="Ex: Docker - Containers" class="form-input" />
-        </div>
-        <div class="form-group">
-          <label for="modalCommand">Comando</label>
-          <input type="text" id="modalCommand" placeholder="Ex: docker ps -a" class="form-input mono" />
-        </div>
-        <div class="form-group">
-          <label for="modalDesc">Descrição</label>
-          <input type="text" id="modalDesc" placeholder="Ex: Listar todos os containers" class="form-input" />
-        </div>
-        <p class="form-error" id="formError"></p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" id="cancelBtn">Cancelar</button>
-        <button class="btn btn-primary" id="saveBtn">Salvar Comando</button>
+      <div class="mod-body">
+        <ul>
+          <li>Instalação e configuração do ambiente sem complicação</li>
+          <li>Variáveis, listas, loops e funções no contexto do trabalho</li>
+          <li>Leitura e escrita de arquivos .txt, .csv e .json</li>
+        </ul>
       </div>
     </div>
+    <div class="mod-item">
+      <button class="mod-header" onclick="toggleMod(this)">
+        <span class="mod-num">02</span>
+        <span class="mod-name">Automação de Excel e Planilhas</span>
+        <span class="mod-arrow">▶</span>
+      </button>
+      <div class="mod-body">
+        <ul>
+          <li>openpyxl e pandas: leia, escreva e formate planilhas</li>
+          <li>Geração automática de relatórios com gráficos</li>
+          <li>Consolidação de múltiplos arquivos Excel em segundos</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mod-item">
+      <button class="mod-header" onclick="toggleMod(this)">
+        <span class="mod-num">03</span>
+        <span class="mod-name">Envio Automático de E-mails</span>
+        <span class="mod-arrow">▶</span>
+      </button>
+      <div class="mod-body">
+        <ul>
+          <li>Configurar Gmail e Outlook com Python (smtplib)</li>
+          <li>E-mails em massa com dados personalizados por destinatário</li>
+          <li>Anexar arquivos e relatórios gerados automaticamente</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mod-item">
+      <button class="mod-header" onclick="toggleMod(this)">
+        <span class="mod-num">04</span>
+        <span class="mod-name">Geração de PDFs e Documentos</span>
+        <span class="mod-arrow">▶</span>
+      </button>
+      <div class="mod-body">
+        <ul>
+          <li>Criar PDFs profissionais com ReportLab e fpdf2</li>
+          <li>Preencher contratos e formulários automaticamente</li>
+          <li>Extrair dados de PDFs com pdfplumber</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mod-item">
+      <button class="mod-header" onclick="toggleMod(this)">
+        <span class="mod-num">05</span>
+        <span class="mod-name">Organização de Arquivos e Pastas</span>
+        <span class="mod-arrow">▶</span>
+      </button>
+      <div class="mod-body">
+        <ul>
+          <li>Scripts para mover, renomear e organizar arquivos em massa</li>
+          <li>Backups automáticos e monitoramento de pastas</li>
+          <li>Automação de downloads e processamento de anexos</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mod-item">
+      <button class="mod-header" onclick="toggleMod(this)">
+        <span class="mod-num">06</span>
+        <span class="mod-name">Web Scraping para Coleta de Dados</span>
+        <span class="mod-arrow">▶</span>
+      </button>
+      <div class="mod-body">
+        <ul>
+          <li>requests + BeautifulSoup para extrair dados de sites</li>
+          <li>Monitoramento de preços e informações em tempo real</li>
+          <li>Exportar dados coletados diretamente para planilhas</li>
+        </ul>
+      </div>
+    </div>
   </div>
+</section>
 
-  <!-- TOAST -->
-  <div class="toast" id="toast"></div>
+<section class="learn">
+  <span class="section-tag">// resultados práticos</span>
+  <h2 class="section-title">O que você vai <span class="acc">conseguir fazer</span></h2>
 
-  <script src="app.js"></script>
+  <div class="learn-grid">
+    <div class="learn-card">
+      <span class="lc-icon">📈</span>
+      <h3 class="lc-title">Relatórios automáticos</h3>
+      <p class="lc-desc">Gere relatórios semanais em Excel e PDF com um clique — ou no horário que você programar.</p>
+      <span class="lc-tag">openpyxl · pandas · fpdf2</span>
+    </div>
+    <div class="learn-card">
+      <span class="lc-icon">📬</span>
+      <h3 class="lc-title">Disparos em massa de e-mail</h3>
+      <p class="lc-desc">Envie 500 e-mails personalizados em 30 segundos — cada um com o nome e dados do destinatário.</p>
+      <span class="lc-tag">smtplib · yagmail</span>
+    </div>
+    <div class="learn-card">
+      <span class="lc-icon">🗂️</span>
+      <h3 class="lc-title">Organização de arquivos</h3>
+      <p class="lc-desc">Scripts que varrem pastas e organizam centenas de arquivos por tipo, data ou nome automaticamente.</p>
+      <span class="lc-tag">os · shutil · pathlib</span>
+    </div>
+    <div class="learn-card">
+      <span class="lc-icon">🌐</span>
+      <h3 class="lc-title">Coleta de dados da internet</h3>
+      <p class="lc-desc">Extraia preços, tabelas e informações de sites e jogue direto para sua planilha sem copiar nada.</p>
+      <span class="lc-tag">requests · BeautifulSoup</span>
+    </div>
+    <div class="learn-card">
+      <span class="lc-icon">📄</span>
+      <h3 class="lc-title">Preenchimento de formulários</h3>
+      <p class="lc-desc">Automatize preenchimento de contratos, notas fiscais e qualquer documento repetitivo em PDF.</p>
+      <span class="lc-tag">pdfplumber · reportlab</span>
+    </div>
+    <div class="learn-card">
+      <span class="lc-icon">⏲️</span>
+      <h3 class="lc-title">Tarefas agendadas</h3>
+      <p class="lc-desc">Configure seus scripts para rodarem sozinhos toda manhã, toda semana ou em qualquer horário.</p>
+      <span class="lc-tag">schedule · cron · task scheduler</span>
+    </div>
+  </div>
+</section>
+
+<div class="counters">
+  <div class="counter-item">
+    <span class="counter-num" data-target="1200">0</span>
+    <span class="counter-label">Alunos ativos</span>
+  </div>
+  <div class="counter-item">
+    <span class="counter-num" data-target="4">0</span>
+    <span class="counter-label">Horas economizadas por dia</span>
+  </div>
+  <div class="counter-item">
+    <span class="counter-num" data-target="98">0</span>
+    <span class="counter-label">% de satisfação</span>
+  </div>
+  <div class="counter-item">
+    <span class="counter-num" data-target="7">0</span>
+    <span class="counter-label">Dias de garantia</span>
+  </div>
+</div>
+
+<section class="testimonials">
+  <span class="section-tag">// prova de clientes</span>
+  <h2 class="section-title">Quem já comprou <span class="acc">recomenda</span></h2>
+
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">Trabalhava 3 horas por dia consolidando planilhas de diferentes filiais. Depois de 2 semanas no curso, criei um script que faz isso em 40 segundos. Meu chefe ficou impressionado.</p>
+      <div class="testi-footer">
+        <div class="testi-avatar" style="background:#00C840;">MR</div>
+        <div class="testi-info">
+          <div class="testi-name">Marcos Ribeiro</div>
+          <div class="testi-role">Analista Financeiro · SP</div>
+        </div>
+        <span class="testi-verified">✓ COMPROU</span>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">Nunca tinha programado na vida. Em 3 semanas já estava enviando relatórios automáticos por e-mail todo domingo às 23h. O conteúdo é super didático e direto ao ponto.</p>
+      <div class="testi-footer">
+        <div class="testi-avatar" style="background:#FFD95A;">CS</div>
+        <div class="testi-info">
+          <div class="testi-name">Camila Silva</div>
+          <div class="testi-role">Assistente Administrativa · RJ</div>
+        </div>
+        <span class="testi-verified">✓ COMPROU</span>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">O módulo de Web Scraping se pagou no primeiro dia de uso. Coletei dados de centenas de concorrentes e montei um dashboard do zero. Fantástico!</p>
+      <div class="testi-footer">
+        <div class="testi-avatar" style="background:#00A8FF;">JL</div>
+        <div class="testi-info">
+          <div class="testi-name">João Lucas</div>
+          <div class="testi-role">Consultor de Vendas · MG</div>
+        </div>
+        <span class="testi-verified">✓ COMPROU</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="oferta">
+  <span class="section-tag">// investimento</span>
+  <h2 class="section-title">Comece a poupar <span class="acc">tempo hoje</span></h2>
+
+  <div class="pricing-box">
+    <div class="pricing-glow"></div>
+    <div class="pricing-header">
+      🔥 Oferta Especial por Tempo Limitado
+    </div>
+    <div class="pricing-body">
+      <div class="price-old">R$ 297,00</div>
+      <div class="price-main"><span class="currency">R$</span> 97<span class="currency">,00</span></div>
+      <div class="price-period">Acesso vitalício · Sem mensalidades</div>
+
+      <ul class="price-features">
+        <li><span class="check">✓</span> 6 Módulos completos (Do zero ao avançado)</li>
+        <li><span class="check">✓</span> Modelos de Scripts prontos para baixar</li>
+        <li><span class="check">✓</span> Certificado de Conclusão de carga horária</li>
+        <li><span class="check">✓</span> Suporte individual na área de membros</li>
+        <li><span class="check">✓</span> Garantia de 7 dias ou seu dinheiro de volta</li>
+      </ul>
+
+      <a href="https://go.hotmart.com/L105221030W?dp=1" target="_blank" class="price-cta">⚡ COMPRAR AGORA COM DESCONTO</a>
+      <div class="price-note">Pagamento 100% seguro via Hotmart</div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <span class="section-tag">// perguntas frequentes</span>
+  <h2 class="section-title">Dúvidas <span class="acc">Comuns</span></h2>
+
+  <div class="faq-grid">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Preciso de conhecimento prévio em programação?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">
+        <p>Não! O curso foi desenhado do absoluto zero, pensando em profissionais que nunca escreveram uma única linha de código. Explicamos tudo passo a passo.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Como funciona o acesso ao conteúdo?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">
+        <p>O acesso é imediato e vitalício. Assim que o pagamento for confirmado, você receberá um e-mail com seus dados de login para a plataforma Hotmart e poderá estudar no seu próprio ritmo.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        E se eu não gostar do curso?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">
+        <p>Oferecemos uma garantia incondicional de 7 dias. Se por qualquer motivo achar que o curso não é para você, basta solicitar o reembolso na plataforma e devolveremos 100% do seu dinheiro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="final-cta-glow"></div>
+  <span class="section-tag">// seu próximo passo</span>
+  <h2 class="section-title">Pare de fazer trabalho de robô. <span class="acc">Deixe as máquinas trabalharem por você.</span></h2>
+  <p>Domine o Python de maneira rápida e mude de patamar no seu ambiente profissional ainda este mês.</p>
+  
+  <div class="final-btns">
+    <a href="https://go.hotmart.com/L105221030W?dp=1" target="_blank" class="btn-main">
+      🚀 GARANTIR MINHA VAGA AGORA
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">python<span>.</span>automacao<span>()</span></div>
+  <div class="footer-text">
+    <p>© 2026 André Taques. Todos os direitos reservados.</p>
+    <p>Distribuído com segurança via <a href="https://hotmart.com" target="_blank">Hotmart</a></p>
+  </div>
+</footer>
+
+<script>
+// Custom Cursor Behavior
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('ring');
+
+if (window.innerWidth > 768) {
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    
+    setTimeout(() => {
+      ring.style.left = e.clientX + 'px';
+      ring.style.top = e.clientY + 'px';
+    }, 40);
+  });
+
+  document.addEventListener('mousedown', () => {
+    ring.style.width = '24px';
+    ring.style.height = '24px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    ring.style.width = '36px';
+    ring.style.height = '36px';
+  });
+}
+
+// Accordion (Modules)
+function toggleMod(btn) {
+  const item = btn.parentElement;
+  const wasOpen = item.classList.contains('open');
+  
+  document.querySelectorAll('.mod-item').forEach(i => i.classList.remove('open'));
+  
+  if (!wasOpen) {
+    item.classList.add('open');
+  }
+}
+
+// Accordion (FAQ)
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const wasOpen = item.classList.contains('open');
+  
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  
+  if (!wasOpen) {
+    item.classList.add('open');
+  }
+}
+
+// Counter Animation
+const counters = document.querySelectorAll('.counter-num');
+const speed = 200;
+
+const startCounters = (entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const counter = entry.target;
+      const updateCount = () => {
+        const target = +counter.getAttribute('data-target');
+        const count = +counter.innerText;
+        const inc = target / speed;
+
+        if (count < target) {
+          counter.innerText = Math.ceil(count + inc);
+          setTimeout(updateCount, 1);
+        } else {
+          counter.innerText = target;
+        }
+      };
+      updateCount();
+      observer.unobserve(counter);
+    }
+  });
+};
+
+const obs = new IntersectionObserver(startCounters, { threshold: 0.5 });
+counters.forEach(c => obs.observe(c));
+</script>
+
 </body>
 </html>
